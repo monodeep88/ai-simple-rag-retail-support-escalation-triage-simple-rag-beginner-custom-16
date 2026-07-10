@@ -1,0 +1,13 @@
+Manager Escalation Matrix - Customer Issues
+
+**Category: Customer Complaint (General)**
+*   **Scenario:** Customer expresses dissatisfaction with staff interaction, store cleanliness, or wait times.
+*   **Action:** Apologize, listen actively, attempt to de-escalate. If resolution is not possible at agent level, offer to involve a manager immediately.
+
+**Category: Refund/Discount Exceptions**
+*   **Scenario:** Request for refund outside policy (e.g., expired return window, no receipt for high-value item). Request for a discount not covered by current promotions.
+*   **Action:** Review policy. If exception is requested, inform customer it requires manager approval. Manager must approve refunds >$50 without receipt or any non-promotional discounts.
+
+**Category: Complex Technical Issues**
+*   **Scenario:** Beyond basic IT troubleshooting (e.g., POS system wide outage, security breaches, data corruption).
+*   **Action:** Contact IT Helpdesk L2 immediately (extension 5678) and inform store manager. Do not attempt advanced fixes.
