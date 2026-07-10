@@ -1,0 +1,268 @@
+{
+  "mode": "ai",
+  "project_title": "Retail Support Escalation Triage RAG Assistant",
+  "short_description": "A beginner-friendly Retrieval-Augmented Generation (RAG) assistant designed to help retail support agents quickly triage customer issues, recommending appropriate escalation paths (e.g., IT, Manager, General Support) based on internal knowledge documents.",
+  "domain_summary": "Retail support often involves a high volume of diverse customer inquiries, ranging from simple product questions to complex technical issues or policy exceptions. Efficiently triaging these issues to the correct department or individual (e.g., IT, store manager, specific product team) is crucial for customer satisfaction and operational efficiency. This project addresses the challenge of providing instant, context-aware guidance to frontline agents to minimize misroutes and resolution times.",
+  "user_persona": "The primary user is a frontline retail customer support agent or a junior manager. They are often new to their role, handle multiple customer contacts daily, and need immediate, accurate guidance on how to escalate complex or unusual customer issues. They value quick answers, clear instructions, and reduced cognitive load during interactions.",
+  "architecture_notes": [
+    "This architecture emphasizes simplicity suitable for beginners. FastAPI is chosen for its ease of use and modern Python capabilities. React provides a responsive single-page application experience. The RAG core uses common components: an open-source embedding model (e.g., `sentence-transformers/all-MiniLM-L6-v2`), a lightweight vector database like ChromaDB (can be run in-memory or file-based), and an open-source LLM (e.g., a quantized Llama 3 or Gemma) for local execution to keep costs down and simplify deployment. No complex microservices or cloud infrastructure are strictly required for the core functionality, making it easy to run locally. The focus is on demonstrating the core RAG pattern: retrieve relevant information, then generate an informed answer."
+  ],
+  "backend_modules": [
+    "RAG Service: Handles the core RAG logic: embedding incoming queries, searching the vector database for relevant documents, and passing context to the LLM for response generation.",
+    "Document Management Service (Basic): Provides endpoints to (re)index documents into the vector database. For a beginner project, this might be a simple POST endpoint that triggers re-embedding all documents."
+  ],
+  "frontend_features": [
+    "Query Input Field: A text area for the support agent to type the customer's issue or question.",
+    "Submit Button: Triggers the RAG process by sending the query to the backend.",
+    "Escalation Recommendation Display: Clearly shows the recommended escalation path (e.g., 'Escalate to IT Support') and a concise reason.",
+    "Relevant Documents Display: Lists the titles or snippets of the knowledge documents that were used to form the recommendation, providing transparency.",
+    "Loading Indicator: Provides visual feedback during backend processing."
+  ],
+  "data_sources": [
+    "Internal Knowledge Base Documents"
+  ],
+  "testing_strategy": [
+    "{'type': 'Unit Tests', 'scope': 'Individual functions (e.g., embedding creation, vector search, prompt formatting, LLM invocation).', 'details': 'Ensure correct input/output for each component.'}",
+    "{'type': 'Integration Tests', 'scope': 'Backend API endpoints and the RAG chain components.', 'details': 'Verify that the /api/triage endpoint correctly processes a query, interacts with the vector DB and LLM, and returns a structured response. Use mock LLM responses for faster testing.'}",
+    "{'type': 'RAG Retrieval Quality Tests', 'scope': 'Vector database retrieval accuracy.', 'details': 'Provide specific queries and assert that the top-k retrieved documents contain expected relevant information. This ensures the embedding model and vector search are working as intended.'}",
+    "{'type': 'End-to-End Tests (Simple)', 'scope': 'Frontend to Backend interaction.', 'details': 'Simulate a user typing a query and clicking submit, then assert that the correct escalation path and documents are displayed on the UI. (Using tools like Playwright or Selenium, or simpler mock API calls for beginner scope).'}"
+  ],
+  "starter_questions": [
+    "What specific type of issues usually require IT intervention in retail?",
+    "When should a customer complaint be escalated to a manager?",
+    "What is the policy for returns without a receipt?",
+    "How do I handle a POS system freezing during a transaction?",
+    "Are there any specific scenarios where a price adjustment needs manager approval?"
+  ],
+  "workflow_steps": [
+    "1. Customer Issue: A customer presents an issue or asks a question to a support agent.",
+    "2. Agent Input: The support agent types a summary of the customer's issue into the RAG assistant's input field.",
+    "3. Query Submission: The agent clicks 'Submit' or presses Enter.",
+    "4. Backend Processing:",
+    "   a. The backend receives the query.",
+    "   b. The query is embedded into a vector.",
+    "   c. The vector database is queried to find the most relevant internal knowledge documents.",
+    "   d. The retrieved documents, along with the original query, are formatted into a prompt for the LLM."
+  ],
+  "business_rules": [
+    "If the customer's issue contains keywords like 'POS system', 'network error', 'scanner malfunction', 'printer not working', or 'software update', escalate to 'IT Support'.",
+    "If the customer's issue mentions 'refund amount over $100', 'policy override', 'customer complaint about staff', 'special discount', or 'unusual return', escalate to 'Manager'.",
+    "If the customer's issue relates to general product information, store hours, basic returns within policy, or stock availability, recommend 'General Support'.",
+    "Always provide a brief, actionable reason for the recommended escalation path.",
+    "Prioritize direct keyword matches for immediate escalation; otherwise, rely on semantic similarity from RAG.",
+    "In cases of ambiguity (e.g., equally relevant IT and Manager documents), default to the most critical (e.g., Manager for customer satisfaction) or 'General Support' for further investigation."
+  ],
+  "sample_documents": [
+    {
+      "filename": "SOP_Returns_Policy.txt",
+      "content": "Customer Returns Policy v2.1\n\n1.  **Standard Returns:** Items can be returned within 30 days of purchase with a valid receipt for a full refund to the original payment method. Item must be in new, resalable condition.\n2.  **Returns Without Receipt:** For items returned without a receipt, store credit will be issued based on the item's lowest selling price in the last 60 days. Manager override is required for any cash refund without a receipt or for items valued over $50.\n3.  **Defective Items:** Defective items can be exchanged or refunded within 90 days. If the defect is due to customer misuse, refund may be denied. Manager approval required for denial.\n4.  **Final Sale Items:** All items marked 'Final Sale' are non-returnable and non-refundable."
+    },
+    {
+      "filename": "IT_Troubleshooting_POS_V1.3.txt",
+      "content": "Point-of-Sale (POS) System Basic Troubleshooting Guide\n\n**Issue: POS Freezes or is Unresponsive**\n1.  **Check Network Connectivity:** Ensure the Ethernet cable is securely connected to the terminal and router. Confirm Wi-Fi signal strength if applicable.\n2.  **Reboot Terminal:** Perform a soft reboot of the POS terminal. If unsuccessful, a hard reboot (power cycle) may be necessary. Save any pending transactions first.\n3.  **Check for Updates:** Verify if any system updates are pending. Install during off-peak hours.\n4.  **Escalate:** If the issue persists after these steps for more than 15 minutes, log an IT support ticket and provide the terminal ID, exact error message (if any), and steps already taken. For immediate assistance, call IT Helpdesk L1 at extension 1234."
+    },
+    {
+      "filename": "Manager_Escalation_Matrix.txt",
+      "content": "Manager Escalation Matrix - Customer Issues\n\n**Category: Customer Complaint (General)**\n*   **Scenario:** Customer expresses dissatisfaction with staff interaction, store cleanliness, or wait times.\n*   **Action:** Apologize, listen actively, attempt to de-escalate. If resolution is not possible at agent level, offer to involve a manager immediately.\n\n**Category: Refund/Discount Exceptions**\n*   **Scenario:** Request for refund outside policy (e.g., expired return window, no receipt for high-value item). Request for a discount not covered by current promotions.\n*   **Action:** Review policy. If exception is requested, inform customer it requires manager approval. Manager must approve refunds >$50 without receipt or any non-promotional discounts.\n\n**Category: Complex Technical Issues**\n*   **Scenario:** Beyond basic IT troubleshooting (e.g., POS system wide outage, security breaches, data corruption).\n*   **Action:** Contact IT Helpdesk L2 immediately (extension 5678) and inform store manager. Do not attempt advanced fixes."
+    }
+  ],
+  "tool_catalog": [
+    {
+      "name": "RAG_Retriever",
+      "description": "Retrieves the most semantically relevant documents from the internal knowledge base given a natural language query. This is the core 'tool' for finding contextual information."
+    }
+  ],
+  "agent_plan": [
+    {
+      "name": "Architecture Agent",
+      "role": "Define app boundaries, data flow, runtime stack, and integration points.",
+      "outputs": [
+        "This architecture emphasizes simplicity suitable for beginners. FastAPI is chosen for its ease of use and modern Python capabilities. React provides a responsive single-page application experience. The RAG core uses common components: an open-source embedding model (e.g., `sentence-transformers/all-MiniLM-L6-v2`), a lightweight vector database like ChromaDB (can be run in-memory or file-based), and an open-source LLM (e.g., a quantized Llama 3 or Gemma) for local execution to keep costs down and simplify deployment. No complex microservices or cloud infrastructure are strictly required for the core functionality, making it easy to run locally. The focus is on demonstrating the core RAG pattern: retrieve relevant information, then generate an informed answer."
+      ]
+    },
+    {
+      "name": "Backend Agent",
+      "role": "Design FastAPI modules, service contracts, validation, and error handling.",
+      "outputs": [
+        "RAG Service: Handles the core RAG logic: embedding incoming queries, searching the vector database for relevant documents, and passing context to the LLM for response generation.",
+        "Document Management Service (Basic): Provides endpoints to (re)index documents into the vector database. For a beginner project, this might be a simple POST endpoint that triggers re-embedding all documents."
+      ]
+    },
+    {
+      "name": "Frontend Agent",
+      "role": "Design React screens, state flow, controls, and user feedback states.",
+      "outputs": [
+        "Query Input Field: A text area for the support agent to type the customer's issue or question.",
+        "Submit Button: Triggers the RAG process by sending the query to the backend.",
+        "Escalation Recommendation Display: Clearly shows the recommended escalation path (e.g., 'Escalate to IT Support') and a concise reason.",
+        "Relevant Documents Display: Lists the titles or snippets of the knowledge documents that were used to form the recommendation, providing transparency.",
+        "Loading Indicator: Provides visual feedback during backend processing."
+      ]
+    },
+    {
+      "name": "Database Agent",
+      "role": "Design persistence models, sample data, indexes, and audit records.",
+      "outputs": [
+        "Run history",
+        "Source document metadata",
+        "Generated workflow audit records"
+      ]
+    },
+    {
+      "name": "Testing Agent",
+      "role": "Define contract tests, smoke tests, and generated project validation.",
+      "outputs": [
+        "{'type': 'Unit Tests', 'scope': 'Individual functions (e.g., embedding creation, vector search, prompt formatting, LLM invocation).', 'details': 'Ensure correct input/output for each component.'}",
+        "{'type': 'Integration Tests', 'scope': 'Backend API endpoints and the RAG chain components.', 'details': 'Verify that the /api/triage endpoint correctly processes a query, interacts with the vector DB and LLM, and returns a structured response. Use mock LLM responses for faster testing.'}",
+        "{'type': 'RAG Retrieval Quality Tests', 'scope': 'Vector database retrieval accuracy.', 'details': 'Provide specific queries and assert that the top-k retrieved documents contain expected relevant information. This ensures the embedding model and vector search are working as intended.'}",
+        "{'type': 'End-to-End Tests (Simple)', 'scope': 'Frontend to Backend interaction.', 'details': 'Simulate a user typing a query and clicking submit, then assert that the correct escalation path and documents are displayed on the UI. (Using tools like Playwright or Selenium, or simpler mock API calls for beginner scope).'}"
+      ]
+    },
+    {
+      "name": "DevOps Agent",
+      "role": "Define environment variables, Docker workflow, and repository packaging.",
+      "outputs": [
+        "Docker-ready project",
+        "Environment sample file",
+        "GitHub repository upload"
+      ]
+    },
+    {
+      "name": "Reviewer Agent",
+      "role": "Review the generated plan for completeness, security, and portfolio quality.",
+      "outputs": [
+        "1. Customer Issue: A customer presents an issue or asks a question to a support agent.",
+        "2. Agent Input: The support agent types a summary of the customer's issue into the RAG assistant's input field.",
+        "3. Query Submission: The agent clicks 'Submit' or presses Enter.",
+        "4. Backend Processing:",
+        "   a. The backend receives the query.",
+        "   b. The query is embedded into a vector."
+      ]
+    }
+  ],
+  "model_provider": "gemini",
+  "model_name": "gemini-2.5-flash",
+  "fallback_reason": "OpenAI limit reached. Automatically switched to Gemini.",
+  "architecture": "Customer Support KB Search",
+  "architecture_template_id": 9,
+  "architecture_template_path": "templates/simple-rag/customer-support-kb-search",
+  "architecture_description": "Customer Support KB Search for knowledge base response drafting.",
+  "architecture_version": "1.0",
+  "architecture_origin": "built_in",
+  "architecture_quality_score": 100,
+  "architecture_evolution_notes": "",
+  "architecture_technology": null,
+  "architecture_source_version": null,
+  "validation_pipeline": [
+    "pytest",
+    "npm install",
+    "npm run build",
+    "docker compose config",
+    "docker compose build"
+  ],
+  "problem_statement": "Build a portfolio-ready Simple RAG application for Retail Support Escalation Triage Simple RAG - Beginner Custom 16 that returns explainable answers with sources and timeline evidence.",
+  "target_users": [
+    "Students",
+    "Junior developers",
+    "Portfolio reviewers",
+    "Interviewers"
+  ],
+  "functional_requirements": [
+    "Accept a user question or task from the React UI.",
+    "Validate request shape and reject empty input.",
+    "Execute the Simple RAG workflow with observable timeline steps.",
+    "Return answer, cited sources, timeline, and project metadata.",
+    "Persist each run for debugging, demos, and interview explanation."
+  ],
+  "non_functional_requirements": [
+    "Keep local deterministic fallback behavior so the repo runs without paid API keys.",
+    "Avoid logging secrets or raw provider credentials.",
+    "Keep API responses stable enough for frontend and tests.",
+    "Support Docker-based local deployment and PostgreSQL production storage.",
+    "Keep generated documentation accurate enough for portfolio review."
+  ],
+  "entities": [
+    "RunLog",
+    "SourceDocument",
+    "RetrievedChunk",
+    "TimelineStep",
+    "EmbeddingRecord",
+    "VectorCollection"
+  ],
+  "database_tables": [
+    "run_logs",
+    "source_documents",
+    "retrieved_chunks",
+    "timeline_steps"
+  ],
+  "api_endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "purpose": "Health check for deployment and monitoring."
+    },
+    {
+      "method": "POST",
+      "path": "/api/ask",
+      "purpose": "Run the Simple RAG workflow for a user question."
+    },
+    {
+      "method": "GET",
+      "path": "/api/runs",
+      "purpose": "Return recent stored run logs for review and debugging."
+    }
+  ],
+  "workflows": [
+    "1. Customer Issue: A customer presents an issue or asks a question to a support agent.",
+    "2. Agent Input: The support agent types a summary of the customer's issue into the RAG assistant's input field.",
+    "3. Query Submission: The agent clicks 'Submit' or presses Enter.",
+    "4. Backend Processing:",
+    "   a. The backend receives the query.",
+    "   b. The query is embedded into a vector.",
+    "   c. The vector database is queried to find the most relevant internal knowledge documents.",
+    "   d. The retrieved documents, along with the original query, are formatted into a prompt for the LLM."
+  ],
+  "architecture_components": [
+    "React frontend",
+    "FastAPI backend",
+    "Pipeline service",
+    "Vector/search service",
+    "SQL database",
+    "Optional LLM provider"
+  ],
+  "sequence_flows": [
+    "Main ask flow",
+    "RAG retrieval flow",
+    "Agent execution flow",
+    "Provider fallback flow"
+  ],
+  "security_controls": [
+    "Input validation",
+    "CORS allowlist",
+    "Secret-only environment variables",
+    "Safe logging",
+    "Rate limiting recommendation"
+  ],
+  "scalability_plan": [
+    "Move long runs to a queue",
+    "Use PostgreSQL in production",
+    "Use managed vector DB when data grows",
+    "Cache repeated retrievals",
+    "Add metrics and traces"
+  ],
+  "interview_topics": [
+    "Problem statement",
+    "Architecture layers",
+    "DFD levels",
+    "Database schema",
+    "API contract",
+    "Security",
+    "Scaling"
+  ],
+  "documentation_quality_pipeline": [
+    "enrich_blueprint",
+    "write_design_docs",
+    "validate_required_docs",
+    "qa_score_before_push"
+  ]
+}
