@@ -1,0 +1,7 @@
+Point-of-Sale (POS) System Basic Troubleshooting Guide
+
+**Issue: POS Freezes or is Unresponsive**
+1.  **Check Network Connectivity:** Ensure the Ethernet cable is securely connected to the terminal and router. Confirm Wi-Fi signal strength if applicable.
+2.  **Reboot Terminal:** Perform a soft reboot of the POS terminal. If unsuccessful, a hard reboot (power cycle) may be necessary. Save any pending transactions first.
+3.  **Check for Updates:** Verify if any system updates are pending. Install during off-peak hours.
+4.  **Escalate:** If the issue persists after these steps for more than 15 minutes, log an IT support ticket and provide the terminal ID, exact error message (if any), and steps already taken. For immediate assistance, call IT Helpdesk L1 at extension 1234.
